@@ -1,45 +1,84 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
-# On importe tes fonctions IA depuis l'autre fichier
-from models import train_forecasting, generate_fake_consumption
+from models import run_clustering, train_forecasting, calculer_matrice_confusion, generate_fake_consumption
 
-st.set_page_config(page_title="Dashboard Enedis AI", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="Dashboard Enedis", layout="wide")
 
-st.title("⚡ Analyse de Consommation Enedis")
-st.sidebar.info("Projet réalisé par Amélie & Gaëtan")
+st.title("⚡ Projet Data Science : Analyse de Consommation")
+st.sidebar.header("Options")
 
-# Création des onglets
-tab1, tab2, tab3 = st.tabs(["📊 Clustering & Classif", "📈 Forecasting", "🪄 Génération"])
+# --- CHARGEMENT DES DONNÉES ---
+@st.cache_data
+def load_data():
+    # Charge le fichier récupéré par Amélie
+    df = pd.read_csv("RES2-6-9-labels.csv")
+    return df
 
-with tab1:
-    st.header("Détection RS vs RP")
-    st.write("Ici s'affichera le clustering une fois le dataset chargé.")
-    # On pourra appeler run_clustering(df) ici
+try:
+    df = load_data()
+    st.sidebar.success("Données chargées avec succès !")
+except Exception as e:
+    st.sidebar.error(f"Erreur de chargement : {e}")
+    df = None
 
-with tab2:
-    st.header("Prédiction de la consommation")
-    # Petit exemple avec ta régression linéaire
-    st.write("Test de la régression linéaire sur 24h :")
-    
-    # Données fictives pour le test
-    X = np.array(range(24)).reshape(-1, 1)
-    y = np.array([0.5, 0.4, 0.3, 0.2, 0.5, 1.2, 2.0, 2.5, 2.1, 1.8, 1.5, 1.6, 1.4, 1.3, 1.2, 1.5, 2.2, 2.8, 3.2, 3.0, 2.5, 1.8, 1.2, 0.8])
-    
-    model_regr = train_forecasting(X, y)
-    
-    heure_test = st.slider("Prédire pour quelle heure ?", 0, 23, 12)
-    pred = model_regr.predict([[heure_test]])
-    st.metric(label=f"Consommation prévue à {heure_test}h", value=f"{pred[0]:.2f} kW")
+# --- NAVIGATION ---
+tab1, tab2, tab3 = st.tabs(["📊 Clustering & Evaluation", "📈 Prévision", "🪄 Générateur"])
 
-with tab3:
-    st.header("Générateur de courbes")
-    type_choisi = st.radio("Sélectionnez un type de client :", ["RP", "RS"])
-    
-    if st.button("Générer une courbe"):
-        h, c = generate_fake_consumption(type_choisi)
-        df_gen = pd.DataFrame({"Heure": h, "Conso (kW)": c})
-        fig = px.line(df_gen, x="Heure", y="Conso (kW)", title=f"Profil généré : {type_choisi}")
-        st.plotly_chart(fig)
+if df is not None:
+    # On suppose que la colonne de label est la dernière ou s'appelle 'label' / 'target'
+    # On essaie de l'identifier automatiquement
+    col_label = 'label' if 'label' in df.columns else df.columns[-1]
+    X_data = df.drop(columns=[col_label])
+    y_reel = df[col_label]
+
+    with tab1:
+        st.header("Clustering (Détection RS/RP)")
+        st.write("Aperçu des données brutes :")
+        st.dataframe(df.head(10))
+
+        if st.button("Lancer l'algorithme K-Means"):
+            # 1. Exécuter le clustering
+            labels_predits = run_clustering(X_data)
+            
+            # 2. Afficher la matrice de confusion
+            st.subheader("Matrice de Confusion")
+            cm = calculer_matrice_confusion(y_reel, labels_predits)
+            
+            fig_cm = px.imshow(cm, 
+                               text_auto=True, 
+                               labels=dict(x="Prédiction (Cluster)", y="Réalité (Label)"),
+                               x=['Classe 0', 'Classe 1'],
+                               y=['Classe 0', 'Classe 1'],
+                               color_continuous_scale='RdBu_r')
+            st.plotly_chart(fig_cm)
+            st.info("Note : Les clusters 0 et 1 peuvent être inversés par rapport aux labels originaux.")
+
+    with tab2:
+        st.header("Prédiction de consommation")
+        st.write("Modèle de Régression Linéaire basé sur une courbe moyenne.")
+        
+        # Exemple : on prend la moyenne de toutes les lignes pour s'entraîner
+        conso_moyenne = X_data.mean().values
+        heures = np.arange(len(conso_moyenne)).reshape(-1, 1)
+        
+        model_regr = train_forecasting(heures, conso_moyenne)
+        
+        h_pred = st.slider("Heure à prédire (pas de 30min)", 0, len(heures)-1, 10)
+        res = model_regr.predict([[h_pred]])
+        st.metric("Consommation estimée", f"{res[0]:.3f} kW")
+
+    with tab3:
+        st.header("Générateur de données synthétiques")
+        choix = st.selectbox("Type de logement à simuler", ["RP", "RS"])
+        
+        if st.button("Générer une nouvelle courbe"):
+            x_gen, y_gen = generate_fake_consumption(choix)
+            fig_gen = px.line(x=x_gen, y=y_gen, title=f"Profil de consommation simulé : {choix}")
+            fig_gen.update_layout(xaxis_title="Heures", yaxis_title="Puissance (kW)")
+            st.plotly_chart(fig_gen)
+
+else:
+    st.warning("Veuillez vérifier que le fichier 'RES2-6-9-labels.csv' est bien dans le dossier.")
