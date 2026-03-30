@@ -20,29 +20,33 @@ st.set_page_config(page_title="Dashboard Enedis Pro", layout="wide")
 st.markdown("""
     <style>
     .main-title {
-        background-color: #007BFF; /* Bleu pro - tu peux changer le code couleur */
+        background: linear-gradient(135deg, #007BFF 0%, #0056D2 100%);
         padding: 30px;
         border-radius: 15px;
         color: white;
         text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 35px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     .main-title h1 {
         margin: 0;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-weight: 800;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         color: white !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
     .main-title p {
-        margin: 5px 0 0 0;
-        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        font-size: 1.2rem;
         opacity: 0.9;
+        font-weight: 300;
+        letter-spacing: 1px;
     }
     </style>
     
     <div class="main-title">
-        <h1>📊 DASHBOARD ANALYSE ÉNERGÉTIQUE</h1>
+        <h1>📊 DASHBOARD ANALYSE ÉNERGÉTIQUE ENEDIS</h1>
         <p>Analyse de consommation, Clustering K-Means et Prédictions IA</p>
     </div>
     """, unsafe_allow_html=True)
