@@ -5,6 +5,13 @@ import numpy as np
 import plotly.express as px
 import os
 from sklearn.linear_model import LogisticRegression
+from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import confusion_matrix, mean_absolute_error
+
+
+
 
 # --- CONFIGURATION -------------------------------------------------------------------------
 st.set_page_config(page_title="Dashboard Enedis Pro", layout="wide")
@@ -58,15 +65,20 @@ with col_top_left:
         tab1, tab2 = st.tabs(["Classification (RF)", "Regression (Linear)"])
         
         # --- PREPARATION DES LABELS VIA CLUSTERING (JUSTIFICATION MÉTHODO) ---
-        # On crée des labels 'Type A' et 'Type B' basés sur le comportement
-        from sklearn.cluster import KMeans
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.linear_model import LinearRegression
-        from sklearn.metrics import confusion_matrix, mean_absolute_error
+        
+        st.sidebar.subheader("⚙️ Paramètres des données")
+        use_full_data = st.sidebar.checkbox("Utiliser le dataset complet (Attention : plus lent)", value=False)
 
+        if use_full_data:
+            df_sample = df  # On utilise tout le monde
+            st.sidebar.info(f"Mode : Dataset complet ({len(df)} lignes)")
+        
+        else:
+            # On prend un échantillon de 1000 lignes par exemple
+            df_sample = df.sample(n=min(5000, len(df)), random_state=42)
+            st.sidebar.info(f"Mode : Échantillon (5000 lignes)")
 
-        # Utilisation d'un échantillon pour la fluidité (df et non sf !)
-        df_sample = df.sample(5000) if len(df) > 5000 else df
+        
         features_sample = df_sample[['total', 'max', 'std']]
         
         # Création des labels via Clustering
