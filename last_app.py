@@ -16,6 +16,41 @@ from sklearn.metrics import confusion_matrix, mean_absolute_error
 # --- CONFIGURATION -------------------------------------------------------------------------
 st.set_page_config(page_title="Dashboard Enedis Pro", layout="wide")
 
+# --- TITRE PERSONNALISÉ (BIG RECTANGLE) ---
+st.markdown("""
+    <style>
+    .main-title {
+        background-color: #007BFF; /* Bleu pro - tu peux changer le code couleur */
+        padding: 30px;
+        border-radius: 15px;
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .main-title h1 {
+        margin: 0;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: white !important;
+    }
+    .main-title p {
+        margin: 5px 0 0 0;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    </style>
+    
+    <div class="main-title">
+        <h1>📊 DASHBOARD ANALYSE ÉNERGÉTIQUE</h1>
+        <p>Analyse de consommation, Clustering K-Means et Prédictions IA</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+
+
+
 
 @st.cache_data
 def load_data(path):
