@@ -301,7 +301,10 @@ with st.container(border=True):
     )
     fig.update_traces(line=dict(width=1)) 
     fig.update_xaxes(
-        rangeslider_visible=True, 
+        rangeslider_visible=True,
+
+        rangeslider_thickness=0.06,
+ 
         rangeselector=dict(
 
             y=0.98,
@@ -514,11 +517,11 @@ with st.container(border=True):
     puissance_solaire = st.slider("Taille de l'installation solaire (kWc)", 0, 500, 100, step=10)
     
     # La Mathématique du soleil : on crée une fonction qui simule la production solaire en fonction de l'heure
-    dates = pd.to_datetime(conso_cols, utc=True)
-    heures = dates.hour + dates.minute / 60.0
+    dates_completes = pd.to_datetime(conso_cols, utc=True)
+    heures_completes = dates_completes.hour + dates_completes.minute / 60.0
     
     # On crée une "cloche" qui vaut 1 à 13h, et 0 avant 8h et après 18h
-    facteur_soleil = np.maximum(0, 1 - ((heures - 13) / 5)**2)
+    facteur_soleil = np.maximum(0, 1 - ((heures_completes - 13) / 5)**2)
     production_solaire = puissance_solaire * facteur_soleil
     
     # Calcul de la nouvelle consommation nette du client après prise en compte de la production solaire
@@ -526,18 +529,64 @@ with st.container(border=True):
     
     # On prépare un tableau pour toutes les dates possibles pour ce client
     df_simul = pd.DataFrame({
-        'Date': conso_cols[:336], 
+        'Date': conso_cols, 
         'Sans Solaire (Avant)': client_data.values,
         'Avec Solaire (Après)': conso_nette
     })
     
     # On dessine le graphique de simulation
-    fig_simul = px.line(df_simul, x='Date', y=['Sans Solaire (Avant)', 'Avec Solaire (Après)'], 
-                        color_discrete_sequence=['#1f77b4', '#ff7f0e'],
-                        height=250)
+    fig_simul = px.line(
+        df_simul, 
+        x='Date', 
+        y=['Sans Solaire (Avant)', 'Avec Solaire (Après)'], 
+        color_discrete_sequence=['#1f77b4', '#ff7f0e'],
+        height=350, # Un peu plus haut pour que les boutons s'intègrent bien
+        labels={'value': 'Énergie (kWh)', 'Date': 'Date'}
+    )
                         
-    fig_simul.update_layout(margin=dict(l=0, r=0, t=10, b=0), legend_title_text=None)
+    # 2. On rend la courbe orange un peu plus épaisse pour qu'elle se détache
+    fig_simul.update_traces(line=dict(width=2), selector=dict(name='Sans Solaire (Avant)'))
+    fig_simul.update_traces(line=dict(width=3), selector=dict(name='Avec Solaire (Après)'))
     
+    date_debut = df_simul['Date'].iloc[0] # On prend la toute première date
+    date_fin = pd.to_datetime(date_debut) + pd.Timedelta(days=7) # On ajoute 7 jours
+
+    # On ajoute le sélecteur temporel 
+    fig_simul.update_layout(
+        margin=dict(l=10, r=10, t=50, b=10),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        # On force l'axe Y à s'adapter au maximum réel pour éviter l'effet "écrasé"
+        yaxis=dict(range=[0, client_data.values.max() * 1.1]) 
+    )
+    
+    # 4. On ajoute le sélecteur temporel et on réduit l'épaisseur du bandeau
+    fig_simul.update_xaxes(
+        rangeslider_visible=True, 
+        rangeslider_thickness=0.08, # <--- C'EST CETTE LIGNE ! (8% de la hauteur du graphique au lieu de 20%+)
+        
+        range=[date_debut, date_fin.strftime('%Y-%m-%d %H:%M:%S')],
+        
+        rangeselector=dict(
+            y=1.1,            
+            x=0.01,            
+            yanchor="top",
+            xanchor="left",
+            bgcolor="rgba(230,230,230,0.8)",
+            
+            buttons=list([
+                dict(count=7, label="1 Sem", step="day", stepmode="backward"),
+                dict(count=1, label="1 Mois", step="month", stepmode="backward"),
+                dict(step="all", label="Tout")
+            ])
+        )
+    )
+
 
     st.plotly_chart(fig_simul, use_container_width=True)
 
