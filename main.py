@@ -101,6 +101,14 @@ st.subheader("Prédiction de consommation (Forecasting)")
 y_r, y_p = backend.train_forecasting(client_data_4)
 frontend.display_forecasting(y_r, y_p)
 
+# --- Section 2b : Heatmap hebdomadaire ---
+st.markdown("---")
+st.subheader("🗓️ Heatmap de charge — heure × jour de la semaine")
+with st.container(border=True):
+    st.caption("Consommation moyenne (kWh) par créneau horaire, tous clients et toutes semaines confondus.")
+    df_heatmap = backend.get_heatmap_data(df, conso_cols)
+    frontend.display_load_heatmap(df_heatmap)
+
 # 3. Bloc Générateur (Avant la synthèse finale)
 st.markdown("---")
 st.subheader("Générateur de profils types (RP/RS)")
