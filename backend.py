@@ -159,13 +159,31 @@ def run_pca(df_sample):
     pca_results = pca.fit_transform(features_scaled)
     return pd.DataFrame(pca_results, columns=['PC1', 'PC2'])
 
-def train_forecasting(client_data):
-    ts = client_data.values
-    X = ts[:-1].reshape(-1, 1)
-    y = ts[1:]
+def train_forecasting(client_data, conso_cols):
+    dates_converties = pd.to_datetime(conso_cols)
+    heures = [d.hour for d in dates_converties]
+    jours = [d.dayofweek for d in dates_converties]
+    weekends = [1 if d.dayofweek >= 5 else 0 for d in dates_converties]
+    df_ts = pd.DataFrame({
+        'y': client_data.values,
+        'heure': heures,
+        'jour': jours,
+        'is_weekend': weekends
+    })
+
+    df_ts['lag_1h'] = df_ts['y'].shift(1)
+    df_ts = df_ts.dropna()
+    X = df_ts[['lag_1h', 'heure', 'jour', 'is_weekend']]
+    y = df_ts['y']
+
+    split = int(len(df_ts) * 0.8)
+    X_train, X_test = X.iloc[:split], X.iloc[split:]
+    y_train, y_test = y.iloc[:split], y.iloc[split:]
+
     model = LinearRegression()
-    model.fit(X, y)
-    return y, model.predict(X)
+    model.fit(X_train, y_train)
+
+    return y_test.values, model.predict(X_test)
 
 def generate_synthetic_profile(type_client):
     t = np.linspace(0, 24, 48)
