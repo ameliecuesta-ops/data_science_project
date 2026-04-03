@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.metrics import confusion_matrix, mean_absolute_error
 from sklearn.decomposition import PCA
-
+from sklearn.preprocessing import StandardScaler
 
 
 def process_data(path):
@@ -153,8 +153,11 @@ def simulate_solar_production(client_data, conso_cols, puissance_solaire):
 
 def run_pca(df_sample):
     features = df_sample[['total', 'max', 'std', 'ratio_we_semaine', 'conso_pointe_soir']]
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
     pca = PCA(n_components=2)
-    return pd.DataFrame(pca.fit_transform(features), columns=['PC1', 'PC2'])
+    pca_results = pca.fit_transform(features_scaled)
+    return pd.DataFrame(pca_results, columns=['PC1', 'PC2'])
 
 def train_forecasting(client_data):
     ts = client_data.values
