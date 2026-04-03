@@ -95,19 +95,11 @@ st.subheader("Analyse de Dimensionnalité (PCA)")
 df_pca = backend.run_pca(df_sample)
 frontend.display_pca_chart(df_pca, labels_sample)
 
-# 2. Bloc Forecasting (Juste après ton analyse détaillée client)
+# 2. Bloc Forecasting
 st.markdown("---")
 st.subheader("Prédiction de consommation (Forecasting)")
-y_r, y_p = backend.train_forecasting(client_data_4)
+y_r, y_p = backend.train_forecasting(client_data_4,conso_cols)
 frontend.display_forecasting(y_r, y_p)
-
-# --- Section 2b : Heatmap hebdomadaire ---
-st.markdown("---")
-st.subheader("🗓️ Heatmap de charge — heure × jour de la semaine")
-with st.container(border=True):
-    st.caption("Consommation moyenne (kWh) par créneau horaire, tous clients et toutes semaines confondus.")
-    df_heatmap = backend.get_heatmap_data(df, conso_cols)
-    frontend.display_load_heatmap(df_heatmap)
 
 # 3. Bloc Générateur (Avant la synthèse finale)
 st.markdown("---")

@@ -58,9 +58,12 @@ def prepare_sample(df, use_full_data):
 
 def train_classification(df_sample, model_choice):
     features_clustering = df_sample[['total', 'max', 'std', 'ratio_we_semaine', 'conso_pointe_soir']]
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features_clustering)
+
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     labels_sample = kmeans.fit_predict(features_clustering)
-    
+
     X_features_ia = features_clustering 
 
     if model_choice == "Random Forest":
@@ -193,16 +196,3 @@ def generate_synthetic_profile(type_client):
     else:
         base *= 0.4
     return t, base
-
-def get_heatmap_data(df, conso_cols):
-    """Retourne un DataFrame long avec dow, heure, valeur pour la heatmap."""
-    dates = pd.to_datetime(conso_cols)
-    
-    # On construit un df long : une ligne par (client, horodate)
-    df_long = df[conso_cols].copy()
-    df_long.columns = range(len(conso_cols))
-    df_melted = df_long.melt(var_name='col_idx', value_name='valeur')
-    df_melted['dow'] = df_melted['col_idx'].map(lambda i: dates[i].dayofweek)
-    df_melted['heure'] = df_melted['col_idx'].map(lambda i: dates[i].hour)
-    
-    return df_melted[['dow', 'heure', 'valeur']]

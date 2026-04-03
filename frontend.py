@@ -216,35 +216,3 @@ def display_forecasting(y_reel, y_pred):
 def display_generator_section(t, values, type_nom):
     fig = px.area(x=t, y=values, title=f"Simulation : {type_nom}")
     st.plotly_chart(fig, use_container_width=True)
-
-def display_load_heatmap(df_all):
-    DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-    df_heat = (
-        df_all.groupby(['dow', 'heure'])['valeur']
-        .mean().reset_index()
-    )
-    heat_matrix = (
-        df_heat.pivot(index='heure', columns='dow', values='valeur')
-        .reindex(index=range(24), columns=range(7))
-    )
-    fig_heat = go.Figure(go.Heatmap(
-        z=heat_matrix.values,
-        x=DAY_LABELS,
-        y=[f"{h:02d}:00" for h in range(24)],
-        colorscale=[
-            [0.0,  '#ffffff'],
-            [0.35, '#007BFF'],
-            [0.7,  '#0056D2'],
-            [1.0,  '#0b0e17'],
-        ],
-        colorbar=dict(title='kWh'),
-        hovertemplate='%{x} %{y}<br>%{z:.3f} kWh<extra></extra>',
-    ))
-    fig_heat.update_layout(
-        title='Consommation moyenne par heure et jour de la semaine',
-        xaxis=dict(side='top'),
-        yaxis=dict(autorange='reversed'),
-        height=520,
-        margin=dict(l=0, r=0, t=80, b=0),
-    )
-    st.plotly_chart(fig_heat, use_container_width=True)
