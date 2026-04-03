@@ -56,8 +56,8 @@ def set_page_config_and_title():
         """, unsafe_allow_html=True)
 
 def display_kpi_section(val_max, val_moyenne, nb_clients):
-    str_max = f"{val_max:,.0f}".replace(",", " ") + " kW"
-    str_moy = f"{val_moyenne:,.0f}".replace(",", " ") + " kW"
+    str_max = f"{val_max:,.0f}".replace(",", " ") + " kWh"
+    str_moy = f"{val_moyenne:,.0f}".replace(",", " ") + " kWh"
     str_clients = f"{nb_clients:,.0f}".replace(",", " ")
     
     html_code = (
@@ -87,7 +87,7 @@ def display_classification_tab(acc, cm):
     st.plotly_chart(fig_cm, width='stretch')
 
 def display_regression_tab(mae_rf, x_range, y_range_preds, df_sample_graph):
-    st.metric("Erreur Moyenne (MAE)", f"{mae_rf:.1f} kW")
+    st.metric("Erreur Moyenne (MAE)", f"{mae_rf:.1f} kWh")
     fig_reg = px.scatter(
         df_sample_graph, x='conso_pointe_soir', y='max', color='Profil',
         trendline="ols", title="Prédiction du Pic via Random Forest (Non-linéaire)",
