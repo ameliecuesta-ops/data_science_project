@@ -67,7 +67,7 @@ Attention : En raison de sa taille, le fichier de données brut dataset.csv n'es
 
 Pour exécuter le code, vous devez :
 
-Télécharger le jeu de données Enedis (RES2-6-9kVA) : 
+Télécharger le jeu de données Enedis (RES2-6-9kVA) : https://drive.google.com/drive/folders/1iM6HijTZJ5KSlhz2tZz6_Yzy5yFizPzp?usp=drive_link
 
 Nommer ce fichier export.csv
 
@@ -76,7 +76,7 @@ Placer ce fichier à la racine du projet, dans le même répertoire que main.py.
 Le chemin d'accès est géré de manière dynamique via la bibliothèque os pour garantir la compatibilité sur n'importe quel système d'exploitation.
 
 ## Utilisation
-Pour lancer l'application interactive (Dashboard), exécutez la commande suivante à la racine du projet : https://drive.google.com/drive/folders/1iM6HijTZJ5KSlhz2tZz6_Yzy5yFizPzp?usp=drive_link
+Pour lancer l'application interactive (Dashboard), exécutez la commande suivante à la racine du projet : 
 
 ```bash
 streamlit run main.py
